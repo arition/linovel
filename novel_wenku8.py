@@ -21,7 +21,8 @@ class Wenku(AbstractNovel):
 
     @staticmethod
     def check_url(url):
-        url_checker = re.compile(r'http://www.wenku8.com/book/(\d+).htm')
+        url_checker = re.compile(
+            r'https?://www.wenku8.(com|net)/book/(\d+).htm')
         return True if url_checker.search(url) else False
 
     @staticmethod
@@ -55,7 +56,7 @@ class Wenku(AbstractNovel):
         for j in i.text.split('\n'):
             if j.strip():
                 lines.append(j.strip())
-        hasCredit = 'wenku8.com' in lines[-1]
+        hasCredit = 'wenku8' in lines[-1]
         if hasCredit:
             lines = lines[1:-1]
         for i in re.findall(r'src="(http.*?(jpg|png))', str(i)):
@@ -81,7 +82,8 @@ class Wenku(AbstractNovel):
         """
         try:
             soup = self.parse_page(url, 'gbk')
-            chapter_name = soup.select('div#title')[0].text[len(volume_title):].strip()
+            chapter_name = soup.select('div#title')[
+                0].text[len(volume_title):].strip()
             self.print_info(chapter_name)
             chapter_content = self.get_chapter_content(soup)
             self.add_chapter((number, chapter_name, chapter_content))
@@ -97,7 +99,8 @@ class Wenku(AbstractNovel):
 
         if not self.single_thread:
             for i, url in enumerate(urls):
-                t = threading.Thread(target=self.extract_chapter, args=(volume_title, url, i))
+                t = threading.Thread(
+                    target=self.extract_chapter, args=(volume_title, url, i))
                 t.daemon = True
                 t.start()
                 th.append(t)
@@ -110,7 +113,8 @@ class Wenku(AbstractNovel):
     def extract_volume_name(self, title):
         if len(title.split()) >= 2:
             index = title.find('卷')
-            self.volume_number, self.volume_name = title[:index + 1], title[index + 2:]
+            self.volume_number, self.volume_name = title[:index +
+                                                         1], title[index + 2:]
         else:
             self.volume_number = title
             self.volume_name = ''
@@ -155,7 +159,8 @@ class Wenku(AbstractNovel):
         self.find_date(soup)
 
     def get_volumes_url(self, soup):
-        url = re.search(r'<a href="(http://www.wenku8.com/novel/.*?index.htm)">小说目录</a>', str(soup)).group(1)
+        url = re.search(
+            r'<a href="(https?://www.wenku8.(com|net)/novel/.*?index.htm)">小说目录</a>', str(soup)).group(1)
         return url
 
     def extract_volumes(self, soup):
